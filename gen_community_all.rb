@@ -101,8 +101,8 @@ rpms = %w(
 rpms.each do |key,val|
   pwd = Dir.pwd
   Dir.chdir key
-  puts "** Creating SRPM"
-  `#{RPMWIZ} remote-build --buildbot builder`
+  puts "** Sending #{key} to buildbot #{BUILD_HOST}"
+  `#{RPMWIZ} remote-build --buildbot #{BUILD_HOST}`
   if $? != 0
     raise Exception.new("Could not build SRPM for #{val}")
   end

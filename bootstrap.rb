@@ -1,10 +1,21 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-require 'rest-client'
+
+begin
+  require 'rest-client'
+rescue LoadError => e
+  $stderr.puts "rest-client not found. Install it first:"
+  $stderr.puts "  sudo gem install rest-client"
+end
+
 require 'yaml'
-require 'pp'
-require 'pkg-wizard'
-require 'pkg-wizard/git'
+begin
+  require 'pkg-wizard'
+  require 'pkg-wizard/git'
+rescue LoadError => e
+  $stderr.puts "pkg-wizard not found. Install it first:"
+  $stderr.puts "  sudo gem install pkg-wizard"
+end
 
 GH_REPOS_URL = 'http://github.com/api/v2/yaml/repos/show/abiquo-rpms'
 GH_URL = 'http://github.com/abiquo-rpms'

@@ -70,7 +70,7 @@ rpms.each do |key,val|
     #if $? != 0
     #  raise Exception.new("Error bumping spec build for #{val}")
     #end
-    puts "** Creating #{key} SRPM"
+    puts "** Sending #{key} to buildbot #{BUILD_HOST}"
     `#{RPMWIZ} remote-build --buildbot #{BUILD_HOST}`
     if $? != 0
       raise Exception.new("Could not build SRPM for #{val}")
