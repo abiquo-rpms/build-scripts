@@ -1,0 +1,10 @@
+TIPS AND TRICKS
+---------------
+
+build-bot
+---------
+* finding packages build the last 30 minutes
+
+find -mmin -30 -name '*.rpm'|grep result|egrep -v 'debuginfo|src.rpm'
+
+
