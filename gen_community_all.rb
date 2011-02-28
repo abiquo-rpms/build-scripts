@@ -5,9 +5,8 @@ require 'streamly'
 require 'fileutils'
 
 RELEASE_URL = 'http://hudson/1.7.0/community/'
-BUILD_SCRIPTS_DIR = 'build-scripts'
-RPMDEV_BUMPBUILD=File.expand_path(File.join(BUILD_SCRIPTS_DIR, 'rpmdev-bumpbuild'))
 RPMWIZ='/var/lib/gems/1.8/bin//pkgwiz'
+BUILD_HOST = 'builder' if not defined? BUILD_HOST
 
 def test_200(url)
   h = Streamly.head(url).lines.first 
@@ -21,11 +20,6 @@ def clean_rpmbuild_dir
   Dir["#{ENV['HOME']}/rpmbuild/*"].each do |entry|
     FileUtils.rm_rf entry
   end
-end
-
-if not File.directory?(BUILD_SCRIPTS_DIR)
-  $stderr.puts 'build-scripts dir not found. Aborting'
-  exit 1
 end
 
 if not File.exist?(RPMWIZ)
@@ -51,7 +45,7 @@ clean_rpmbuild_dir
 
 rpms.each do |key,val|
   if test_200(RELEASE_URL + "/#{val}")
-    puts "Updating #{val}..."
+    puts "* Updating #{val}..."
     if key.eql? 'abiquo-server-community'
       if test_200(RELEASE_URL + '/kinton-schema.sql')
         puts "Updating kinton-schema..."
@@ -71,8 +65,8 @@ rpms.each do |key,val|
     end
     pwd = Dir.pwd
     Dir.chdir key
-    puts "** Creating SRPM"
-    `#{RPMWIZ} remote-build --buildbot builder`
+    puts "** Creating #{key} SRPM"
+    `#{RPMWIZ} remote-build --buildbot #{BUILD_HOST}`
     if $? != 0
       raise Exception.new("Could not build SRPM for #{val}")
     end
