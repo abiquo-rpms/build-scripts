@@ -1,6 +1,18 @@
 #!/usr/bin/env ruby
 require 'rubygems'
 
+#
+# Tweak this VARS to fit your needs
+#
+BUILD_HOST = 'builder'
+
+#
+# DO NOT CHANGE
+#
+GH_REPOS_URL = 'http://github.com/api/v2/yaml/repos/show/abiquo-rpms'
+GH_URL = 'http://github.com/abiquo-rpms'
+REPOS_BASE = 'packages'
+
 begin
   require 'rest-client'
 rescue LoadError => e
@@ -24,10 +36,6 @@ rescue LoadError => e
   $stderr.puts "  sudo gem install streamly"
 end
 
-GH_REPOS_URL = 'http://github.com/api/v2/yaml/repos/show/abiquo-rpms'
-GH_URL = 'http://github.com/abiquo-rpms'
-REPOS_BASE = 'packages'
-BUILD_HOST = 'builder'
 
 Dir.mkdir REPOS_BASE if not File.exist?(REPOS_BASE)
 
@@ -51,3 +59,5 @@ if ARGV.include?('--all')
 else
   require '../gen_community_dev_release'
 end
+
+require '../gen_enterprise_dev_release'
