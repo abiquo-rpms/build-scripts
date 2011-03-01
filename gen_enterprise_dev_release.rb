@@ -37,6 +37,12 @@ if not test_200(ENTERPRISE_RELEASE_URL)
   exit 1
 end
 
+puts
+puts "*************************"
+puts "       ENTERPRISE        "
+puts "*************************"
+puts
+
 rpms = {
   'abiquo-virtualfactory' => 'virtualfactory.war',
   'abiquo-client-premium' => 'client-premium.war',
@@ -53,7 +59,7 @@ clean_rpmbuild_dir
 
 rpms.each do |key,val|
   if test_200(ENTERPRISE_RELEASE_URL + "/#{val}")
-    puts "Updating #{val}..."
+    puts "* Updating #{val}..."
     if key.eql? 'abiquo-server'
       if test_200(ENTERPRISE_RELEASE_URL + '/kinton-schema.sql')
         puts "Updating kinton-schema..."
@@ -73,7 +79,7 @@ rpms.each do |key,val|
     end
     pwd = Dir.pwd
     Dir.chdir key
-    puts "** Creating SRPM"
+    puts "** Sending #{key} to #{BUILD_HOST}"
     `#{RPMWIZ} remote-build --buildbot #{BUILD_HOST}`
     if $? != 0
       raise Exception.new("Could not build SRPM for #{val}")

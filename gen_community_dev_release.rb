@@ -41,6 +41,12 @@ rpms = {
   'abiquo-api-community' => 'api.war'
 }
 
+puts
+puts "*************************"
+puts "     COMMUNITY PLAT      "
+puts "*************************"
+puts
+
 clean_rpmbuild_dir
 
 rpms.each do |key,val|
