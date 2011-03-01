@@ -3,7 +3,7 @@
 ## Clone the build-scripts repo
 
 	git clone https://github.com/abiquo-rpms/build-scripts
-	build-scripts
+	cd build-scripts
 
 ## Install the required packages
 
