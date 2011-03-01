@@ -17,3 +17,19 @@ Install required gems
  
   sudo gem install rest-client pkg-wizard streamly
 
+
+USAGE
+------
+
+
+* Generate and build all the RPMS (platform, libraries and related packages, ~40 pkgs)
+
+  ./bootstrap.rb --all
+
+* Generate and build platform packages
+ 
+  ./bootstrap.rb  
+
+* Do not fetch/refresh packages from github when building
+
+  ./bootstrap.rb --skip-fetch
