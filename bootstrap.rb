@@ -20,6 +20,7 @@ begin
 rescue LoadError => e
   $stderr.puts "rest-client not found. Install it first:"
   $stderr.puts "  sudo gem install rest-client"
+  exit 1
 end
 
 require 'yaml'
@@ -29,6 +30,7 @@ begin
 rescue LoadError => e
   $stderr.puts "pkg-wizard not found. Install it first:"
   $stderr.puts "  sudo gem install pkg-wizard"
+  exit 1
 end
 
 begin
@@ -36,6 +38,7 @@ begin
 rescue LoadError => e
   $stderr.puts "streamly not found. Install it first:"
   $stderr.puts "  sudo gem install streamly"
+  exit 1
 end
 
 
