@@ -7,9 +7,9 @@ require 'fileutils'
 #
 # Tweak this to fit your needs
 #
-ENTERPRISE_RELEASE_URL = 'http://hudson/1.7.0/premium/'
-
-RPMWIZ='/var/lib/gems/1.8/bin//pkgwiz' if not defined? RPMWIZ
+ENV['PATH'] = ENV['PATH'] + ':/var/lib/gems/1.8/bin:/var/lib/gems/1.9/bin'
+ENTERPRISE_RELEASE_URL = 'http://hudson/1.7.0/premium/' if not defined? ENTERPRISE_RELEASE_URL
+PKGWIZ='pkgwiz' if not defined? PKGWIZ
 BUILD_HOST = 'builder' if not defined? BUILD_HOST
 ###
 
@@ -27,7 +27,7 @@ def clean_rpmbuild_dir
   end
 end
 
-if not File.exist?(RPMWIZ)
+if not File.exist?(`which #{PKGWIZ}`.strip.chomp)
   $stderr.puts 'pkgwiz not found. Install it first'
   exit 1
 end
@@ -80,7 +80,7 @@ rpms.each do |key,val|
     pwd = Dir.pwd
     Dir.chdir key
     puts "** Sending #{key} to #{BUILD_HOST}"
-    `#{RPMWIZ} remote-build --buildbot #{BUILD_HOST}`
+    `#{PKGWIZ} remote-build --buildbot #{BUILD_HOST}`
     if $? != 0
       raise Exception.new("Could not build SRPM for #{val}")
     end

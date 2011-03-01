@@ -5,6 +5,8 @@ require 'rubygems'
 # Tweak this VARS to fit your needs
 #
 BUILD_HOST = 'builder'
+RELEASE_URL = 'http://hudson/1.7.0/community/'
+ENTERPRISE_RELEASE_URL = 'http://hudson/1.7.0/premium/' 
 
 #
 # DO NOT CHANGE
