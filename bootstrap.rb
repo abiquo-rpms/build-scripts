@@ -17,6 +17,13 @@ rescue LoadError => e
   $stderr.puts "  sudo gem install pkg-wizard"
 end
 
+begin
+  require 'streamly'
+rescue LoadError => e
+  $stderr.puts "streamly not found. Install it first:"
+  $stderr.puts "  sudo gem install streamly"
+end
+
 GH_REPOS_URL = 'http://github.com/api/v2/yaml/repos/show/abiquo-rpms'
 GH_URL = 'http://github.com/abiquo-rpms'
 REPOS_BASE = 'packages'
