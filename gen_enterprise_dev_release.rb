@@ -4,10 +4,14 @@ require 'net/http'
 require 'streamly'
 require 'fileutils'
 
-RELEASE_URL = 'http://hudson/1.7.0/premium/'
-BUILD_SCRIPTS_DIR = 'build-scripts-enterprise'
-RPMDEV_BUMPBUILD=File.expand_path(File.join(BUILD_SCRIPTS_DIR, 'rpmdev-bumpbuild'))
-RPMWIZ='/var/lib/gems/1.8/bin//pkgwiz'
+#
+# Tweak this to fit your needs
+#
+ENTERPRISE_RELEASE_URL = 'http://hudson/1.7.0/premium/'
+
+RPMWIZ='/var/lib/gems/1.8/bin//pkgwiz' if not defined? RPMWIZ
+BUILD_HOST = 'builder' if not defined? BUILD_HOST
+###
 
 def test_200(url)
   h = Streamly.head(url).lines.first 
@@ -23,18 +27,13 @@ def clean_rpmbuild_dir
   end
 end
 
-if not File.directory?(BUILD_SCRIPTS_DIR)
-  $stderr.puts 'build-scripts dir not found. Aborting'
-  exit 1
-end
-
 if not File.exist?(RPMWIZ)
   $stderr.puts 'pkgwiz not found. Install it first'
   exit 1
 end
 
-if not test_200(RELEASE_URL)
-  $stderr.puts "Could not reach #{RELEASE_URL}. Aborting."
+if not test_200(ENTERPRISE_RELEASE_URL)
+  $stderr.puts "Could not reach #{ENTERPRISE_RELEASE_URL}. Aborting."
   exit 1
 end
 
@@ -53,13 +52,13 @@ rpms = {
 clean_rpmbuild_dir
 
 rpms.each do |key,val|
-  if test_200(RELEASE_URL + "/#{val}")
+  if test_200(ENTERPRISE_RELEASE_URL + "/#{val}")
     puts "Updating #{val}..."
     if key.eql? 'abiquo-server'
-      if test_200(RELEASE_URL + '/kinton-schema.sql')
+      if test_200(ENTERPRISE_RELEASE_URL + '/kinton-schema.sql')
         puts "Updating kinton-schema..."
         File.open("#{key}/kinton-schema.sql", 'w') do |f|
-          Streamly.get "#{RELEASE_URL}/kinton-schema.sql" do |chunk|
+          Streamly.get "#{ENTERPRISE_RELEASE_URL}/kinton-schema.sql" do |chunk|
             f.write chunk
           end
         end
@@ -68,14 +67,14 @@ rpms.each do |key,val|
       end
     end
     File.open("#{key}/#{val}", 'w') do |f|
-      Streamly.get "#{RELEASE_URL}/#{val}" do |chunk|
+      Streamly.get "#{ENTERPRISE_RELEASE_URL}/#{val}" do |chunk|
         f.write chunk
       end
     end
     pwd = Dir.pwd
     Dir.chdir key
     puts "** Creating SRPM"
-    `#{RPMWIZ} remote-build --buildbot builder`
+    `#{RPMWIZ} remote-build --buildbot #{BUILD_HOST}`
     if $? != 0
       raise Exception.new("Could not build SRPM for #{val}")
     end
