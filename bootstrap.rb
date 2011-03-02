@@ -60,6 +60,7 @@ if not ARGV.include?('--skip-fetch')
   end
 end
 
+cwd = Dir.pwd
 Dir.chdir REPOS_BASE
 if ARGV.include?('--all')
   require '../gen_community_all'
@@ -68,3 +69,4 @@ else
 end
 
 require '../gen_enterprise_dev_release'
+Dir.chdir cwd

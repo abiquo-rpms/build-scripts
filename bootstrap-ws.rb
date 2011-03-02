@@ -5,7 +5,7 @@ require 'sinatra'
 post '/bootstrap' do
   print "[#{Time.now}] Bootstraping... "
   begin
-    require 'bootstrap'
+    load 'bootstrap'
     puts "OK"
   rescue Exception => e
     puts "FAILED"
