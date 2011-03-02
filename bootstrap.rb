@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'rubygems'
+require 'sinatra'
 
 #
 # Tweak this VARS to fit your needs
@@ -15,58 +16,75 @@ GH_REPOS_URL = 'http://github.com/api/v2/yaml/repos/show/abiquo-rpms'
 GH_URL = 'http://github.com/abiquo-rpms'
 REPOS_BASE = 'packages'
 
-begin
-  require 'rest-client'
-rescue LoadError => e
-  $stderr.puts "rest-client not found. Install it first:"
-  $stderr.puts "  sudo gem install rest-client"
-  exit 1
-end
+def main
 
-require 'yaml'
-begin
-  require 'pkg-wizard'
-  require 'pkg-wizard/git'
-rescue LoadError => e
-  $stderr.puts "pkg-wizard not found. Install it first:"
-  $stderr.puts "  sudo gem install pkg-wizard"
-  exit 1
-end
-
-begin
-  require 'streamly'
-rescue LoadError => e
-  $stderr.puts "streamly not found. Install it first:"
-  $stderr.puts "  sudo gem install streamly"
-  exit 1
-end
-
-
-Dir.mkdir REPOS_BASE if not File.exist?(REPOS_BASE)
-
-if not ARGV.include?('--skip-fetch')
-  repo_number = YAML.load(RestClient.get 'http://github.com/api/v2/yaml/user/show/abiquo-rpms')['user']['public_repo_count'].to_i
-  pages = (repo_number/30.0).ceil
-
-  repos = []
-  1.upto(pages) do |page|
-    repos += YAML.load(RestClient.get GH_REPOS_URL + "?page=#{page}")['repositories']
+  begin
+    require 'rest-client'
+  rescue LoadError => e
+    $stderr.puts "rest-client not found. Install it first:"
+    $stderr.puts "  sudo gem install rest-client"
+    exit 1
   end
 
-  repos = repos.sort { |a,b| a[:name] <=> b[:name] }
-  repos.each do |repo|
-    puts "* Fetching #{repo[:name]} repo..."
-    PKGWizard::GitRPM.fetch GH_URL + "/#{repo[:name]}", "#{REPOS_BASE}/#{repo[:name]}", :depth => 1
+  require 'yaml'
+  begin
+    require 'pkg-wizard'
+    require 'pkg-wizard/git'
+  rescue LoadError => e
+    $stderr.puts "pkg-wizard not found. Install it first:"
+    $stderr.puts "  sudo gem install pkg-wizard"
+    exit 1
   end
+
+  begin
+    require 'streamly'
+  rescue LoadError => e
+    $stderr.puts "streamly not found. Install it first:"
+    $stderr.puts "  sudo gem install streamly"
+    exit 1
+  end
+
+
+  Dir.mkdir REPOS_BASE if not File.exist?(REPOS_BASE)
+
+  if not ARGV.include?('--skip-fetch')
+    repo_number = YAML.load(RestClient.get 'http://github.com/api/v2/yaml/user/show/abiquo-rpms')['user']['public_repo_count'].to_i
+    pages = (repo_number/30.0).ceil
+
+    repos = []
+    1.upto(pages) do |page|
+      repos += YAML.load(RestClient.get GH_REPOS_URL + "?page=#{page}")['repositories']
+    end
+
+    repos = repos.sort { |a,b| a[:name] <=> b[:name] }
+    repos.each do |repo|
+      puts "* Fetching #{repo[:name]} repo..."
+      PKGWizard::GitRPM.fetch GH_URL + "/#{repo[:name]}", "#{REPOS_BASE}/#{repo[:name]}", :depth => 1
+    end
+  end
+
+  cwd = Dir.pwd
+  Dir.chdir REPOS_BASE
+  if ARGV.include?('--all')
+    require '../gen_community_all'
+  else
+    require '../gen_community_dev_release'
+  end
+
+  require '../gen_enterprise_dev_release'
+  Dir.chdir cwd
 end
 
-cwd = Dir.pwd
-Dir.chdir REPOS_BASE
-if ARGV.include?('--all')
-  require '../gen_community_all'
+if ARGV.include? '-w'
+  post '/bootstrap' do
+    print "[#{Time.now}] Bootstraping... "
+    begin
+      main
+    rescue Exception => e
+      puts "FAILED"
+      puts e.message
+    end
+  end
 else
-  require '../gen_community_dev_release'
+  main
 end
-
-require '../gen_enterprise_dev_release'
-Dir.chdir cwd
