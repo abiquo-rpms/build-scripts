@@ -79,6 +79,8 @@ if ARGV.include? '--script'
 else
   require 'sinatra'
 
+  set :port, 4444
+
   get '/' do
     'stuff'
   end
