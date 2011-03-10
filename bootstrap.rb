@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-require 'sinatra'
 
 #
 # Tweak this VARS to fit your needs
@@ -75,7 +74,15 @@ def main
   Dir.chdir cwd
 end
 
-if ARGV.include? '-w'
+if ARGV.include? '--script'
+  main
+else
+  require 'sinatra'
+
+  get '/' do
+    'stuff'
+  end
+
   post '/bootstrap' do
     print "[#{Time.now}] Bootstraping... "
     begin
@@ -85,6 +92,4 @@ if ARGV.include? '-w'
       puts e.message
     end
   end
-else
-  main
 end

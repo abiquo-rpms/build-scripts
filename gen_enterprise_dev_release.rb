@@ -48,7 +48,6 @@ rpms = {
   'abiquo-client-premium' => 'client-premium.war',
   'abiquo-server' => 'server.war',
   'abiquo-api' => 'api.war',
-  'abiquo-ontap' => 'ontap.war',
   'abiquo-lvmiscsi' => 'lvmiscsi.war',
   'abiquo-nodecollector' => 'nodecollector.war',
   'abiquo-v2v' => 'bpm-async.war',
