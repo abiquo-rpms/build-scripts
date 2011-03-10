@@ -44,7 +44,7 @@ USAGE
 
 * Generate and build all the RPMS (platform, libraries and related packages, ~40 pkgs)
 
-  ./bootstrap.rb --all
+  ./bootstrap.rb --script --all
 
 * Generate and build platform packages
  
@@ -52,4 +52,7 @@ USAGE
 
 * Do not fetch/refresh packages from github when building
 
-  ./bootstrap.rb --skip-fetch
+  ./bootstrap.rb --script --skip-fetch
+
+* Run the bootstrap script as a web service
+  ./bootstrap.rb (without the --script arg)
