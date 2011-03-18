@@ -97,6 +97,7 @@ def gen_community_all
     abiquo-remote-services-community
     abiquo-sosreport-plugins
     abiquo-virtualbox
+    abiquo-pocsetup
     anaconda-ee
     hiredis
     libvirt
