@@ -1,12 +1,17 @@
 #!/usr/bin/env ruby
 require 'rubygems'
+require 'gen_community_dev_release'
+require 'gen_enterprise_dev_release'
+require 'gen_community_all'
 
 #
 # Tweak this VARS to fit your needs
 #
 BUILD_HOST = 'builder'
-RELEASE_URL = 'http://hudson/1.7.0/community/'
-ENTERPRISE_RELEASE_URL = 'http://hudson/1.7.0/premium/' 
+RELEASE_URL = 'http://hudson/releases/community/'
+ENTERPRISE_RELEASE_URL = 'http://hudson/releases/premium/' 
+BUILD_HOST = 'builder' if not defined? BUILD_HOST
+ENV['PATH'] = ENV['PATH'] + ':/var/lib/gems/1.8/bin:/var/lib/gems/1.9/bin'
 
 #
 # DO NOT CHANGE
@@ -14,6 +19,23 @@ ENTERPRISE_RELEASE_URL = 'http://hudson/1.7.0/premium/'
 GH_REPOS_URL = 'http://github.com/api/v2/yaml/repos/show/abiquo-rpms'
 GH_URL = 'http://github.com/abiquo-rpms'
 REPOS_BASE = 'packages'
+PKGWIZ='pkgwiz'
+
+def clean_rpmbuild_dir
+  Dir["#{ENV['HOME']}/rpmbuild/*"].each do |entry|
+    FileUtils.rm_rf entry
+  end
+end
+
+
+def test_200(url)
+  h = Streamly.head(url).lines.first 
+  if h =~ /HTTP.*?200/ 
+    return true
+  end 
+  false
+end
+
 
 def main
 
@@ -73,14 +95,11 @@ def main
   cwd = Dir.pwd
   Dir.chdir REPOS_BASE
   if ARGV.include?('--all')
-    require '../gen_community_all'
     gen_community_all
   else
-    require '../gen_community_dev_release'
     gen_community_dev_release
   end
 
-  require '../gen_enterprise_dev_release'
   gen_enterprise_dev_release
 
   sched = Rufus::Scheduler.start_new
@@ -96,7 +115,8 @@ def main
     end
   end
   sched.join
-  puts "* Waiting for Rufus to complete the job..."
+  puts "* Waiting for build-bot to complete the job..."
+  Dir.chdir cwd
 end
 
 if ARGV.include? '--script'

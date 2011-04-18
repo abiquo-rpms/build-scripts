@@ -4,25 +4,6 @@ require 'net/http'
 require 'streamly'
 require 'fileutils'
 
-ENV['PATH'] = ENV['PATH'] + ':/var/lib/gems/1.8/bin:/var/lib/gems/1.9/bin'
-RELEASE_URL = 'http://hudson/1.7.0/community/' if not defined? RELEASE_URL
-PKGWIZ='pkgwiz'
-BUILD_HOST = 'builder' if not defined? BUILD_HOST
-
-def test_200(url)
-  h = Streamly.head(url).lines.first 
-  if h =~ /HTTP.*?200/ 
-    return true
-  end 
-  false
-end
-
-def clean_rpmbuild_dir
-  Dir["#{ENV['HOME']}/rpmbuild/*"].each do |entry|
-    FileUtils.rm_rf entry
-  end
-end
-
 def gen_community_all
   if not File.exist?(`which #{PKGWIZ}`.strip.chomp)
     $stderr.puts 'pkgwiz not found. Install it first'
@@ -74,7 +55,7 @@ def gen_community_all
       pwd = Dir.pwd
       Dir.chdir key
       puts "** Creating #{key} SRPM"
-      `#{PKGWIZ} remote-build --buildbot #{BUILD_HOST}`
+      `#{PKGWIZ} remote-build --build-port 4567 --buildbot #{BUILD_HOST}`
       if $? != 0
         raise Exception.new("Could not build SRPM for #{val}")
       end
