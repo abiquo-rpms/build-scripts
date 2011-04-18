@@ -133,7 +133,7 @@ def main
       RestClient.post "http://#{RPMBuilderConfig.build_host}:4567/createsnapshot", {}
       puts '* Creating repo...'
       RestClient.post "http://#{RPMBuilderConfig.build_host}:4567/createrepo", {}
-      puts '* Creating tagging...'
+      puts "* Tagging #{RPMBuilderConfig.release_tag}..."
       RestClient.post "http://#{RPMBuilderConfig.build_host}:4567/tag/#{RPMBuilderConfig.release_tag}", {}
       puts "* Rufus is done!"
       job.unschedule
