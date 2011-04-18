@@ -4,13 +4,36 @@ require 'gen_community_dev_release'
 require 'gen_enterprise_dev_release'
 require 'gen_community_all'
 
-#
-# Tweak this VARS to fit your needs
-#
-BUILD_HOST = 'builder'
-RELEASE_URL = 'http://hudson/releases/community/'
-ENTERPRISE_RELEASE_URL = 'http://hudson/releases/premium/' 
-BUILD_HOST = 'builder' if not defined? BUILD_HOST
+class RPMBuilderConfig
+  
+  @@enterprise_release_url = 'http://hudson/stable/premium/'
+  @@release_url = 'http://hudson/stable/premium/'
+  @@release_tag = 'stable'
+  @@build_host = 'builder'
+  @@ci_host = 'hudson'
+
+  def self.release_tag=(arg)
+    @@release_tag = arg
+  end
+
+  def self.release_tag
+    @@release_tag
+  end
+
+  def self.release_url
+    "http://#{@@ci_host}/#{@@release_tag}/community/"
+  end
+  
+  def self.enterprise_release_url
+    "http://#{@@ci_host}/#{@@release_tag}/premium/"
+  end
+
+  def self.build_host
+    @@build_host
+  end
+
+end
+
 ENV['PATH'] = ENV['PATH'] + ':/var/lib/gems/1.8/bin:/var/lib/gems/1.9/bin'
 
 #
@@ -91,7 +114,7 @@ def main
     end
   end
 
-  RestClient.post "http://#{BUILD_HOST}:4567/job/clean", {}
+  RestClient.post "http://#{RPMBuilderConfig.build_host}:4567/job/clean", {}
   cwd = Dir.pwd
   Dir.chdir REPOS_BASE
   if ARGV.include?('--all')
@@ -104,12 +127,14 @@ def main
 
   sched = Rufus::Scheduler.start_new
   sched.every '10s', :blocking => true do |job|
-    yaml = YAML.load RestClient.get "http://#{BUILD_HOST}:4567/job/stats"
+    yaml = YAML.load RestClient.get "http://#{RPMBuilderConfig.build_host}:4567/job/stats"
     if yaml[:enqueued] == 0 and yaml[:building] == 0
       puts '* Creating snapshot...'
-      RestClient.post "http://#{BUILD_HOST}:4567/createsnapshot", {}
+      RestClient.post "http://#{RPMBuilderConfig.build_host}:4567/createsnapshot", {}
       puts '* Creating repo...'
-      RestClient.post "http://#{BUILD_HOST}:4567/createrepo", {}
+      RestClient.post "http://#{RPMBuilderConfig.build_host}:4567/createrepo", {}
+      puts '* Creating tagging...'
+      RestClient.post "http://#{RPMBuilderConfig.build_host}:4567/tag/#{RPMBuilderConfig.release_tag}", {}
       puts "* Rufus is done!"
       job.unschedule
     end
@@ -130,8 +155,12 @@ else
     'stuff'
   end
 
-  post '/bootstrap' do
-    puts "[#{Time.now}] Bootstraping... \n\n"
+  post '/start' do
+    tag = params[:tag] || RPMBuilderConfig.release_tag
+    build_host = params[:build_host] || RPMBuilderConfig.build_host
+    RPMBuilderConfig.release_tag = tag
+    puts
+    puts "[#{Time.now}] Building #{RPMBuilderConfig.release_tag} ... \n\n"
     begin
       main
     rescue SystemExit

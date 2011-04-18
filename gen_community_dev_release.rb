@@ -11,8 +11,8 @@ def gen_community_dev_release
     exit 1
   end
 
-  if not test_200(RELEASE_URL)
-    $stderr.puts "Could not reach #{RELEASE_URL}. Aborting."
+  if not test_200(RPMBuilderConfig.release_url)
+    $stderr.puts "Could not reach #{RPMBuilderConfig.release_url}. Aborting."
     exit 1
   end
 
@@ -34,13 +34,13 @@ def gen_community_dev_release
   clean_rpmbuild_dir
 
   rpms.each do |key,val|
-    if test_200(RELEASE_URL + "/#{val}")
+    if test_200(RPMBuilderConfig.release_url + "/#{val}")
       puts "* Updating #{val}..."
       if key.eql? 'abiquo-server-community'
-        if test_200(RELEASE_URL + '/kinton-schema.sql')
+        if test_200(RPMBuilderConfig.release_url + '/kinton-schema.sql')
           puts "Updating kinton-schema..."
           File.open("#{key}/kinton-schema.sql", 'w') do |f|
-            Streamly.get "#{RELEASE_URL}/kinton-schema.sql" do |chunk|
+            Streamly.get "#{RPMBuilderConfig.release_url}/kinton-schema.sql" do |chunk|
               f.write chunk
             end
           end
@@ -49,7 +49,7 @@ def gen_community_dev_release
         end
       end
       File.open("#{key}/#{val}", 'w') do |f|
-        Streamly.get "#{RELEASE_URL}/#{val}" do |chunk|
+        Streamly.get "#{RPMBuilderConfig.release_url}/#{val}" do |chunk|
           f.write chunk
         end
       end
@@ -60,8 +60,8 @@ def gen_community_dev_release
       #if $? != 0
       #  raise Exception.new("Error bumping spec build for #{val}")
       #end
-      puts "** Sending #{key} to buildbot #{BUILD_HOST}"
-      `#{PKGWIZ} remote-build --build-port 4567 --buildbot #{BUILD_HOST}`
+      puts "** Sending #{key} to buildbot #{RPMBuilderConfig.build_host}"
+      `#{PKGWIZ} remote-build --build-port 4567 --buildbot #{RPMBuilderConfig.build_host}`
       if $? != 0
         raise Exception.new("Could not build SRPM for #{val}")
       end
